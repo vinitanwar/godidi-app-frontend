@@ -4,7 +4,7 @@ import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import { FiSend } from "react-icons/fi";
 import { io } from "socket.io-client";
-const socket = io('https://godidi-app-back.onrender.com')
+const socket = io('http://145.223.22.236:8001')
 axios.defaults.withCredentials=true;
 const Messagbox = ({messageId,setLoading,loading}) => {
     const [inputMessage,setInputMessage]=useState("")

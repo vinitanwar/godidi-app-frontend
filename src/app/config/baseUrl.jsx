@@ -1,2 +1,2 @@
-//  export const baseurl='https://godidi-app-back.onrender.com'
-export const baseurl= 'https://godidi-app-back.onrender.com'
+//  export const baseurl='http://145.223.22.236:8001'
+export const baseurl= 'http://145.223.22.236:8001'
