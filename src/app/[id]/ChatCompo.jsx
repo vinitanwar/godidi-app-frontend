@@ -9,7 +9,7 @@ import { io } from "socket.io-client";
 import { useRouter } from "next/navigation";
 axios.defaults.withCredentials=true
 
-const socket = io('http://localhost:8000')
+const socket = io('https://godidi-app-back.onrender.com')
 
 
 
