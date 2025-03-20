@@ -1,14 +1,32 @@
 "use client"
 import { baseurl } from '@/app/component/urls'
 import axios from 'axios'
+import { IterationCcw } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
 import { FiSend } from "react-icons/fi";
 import { io } from "socket.io-client";
-const socket = io('http://145.223.22.236:8001')
+const socket = io('http://localhost:8000')
 axios.defaults.withCredentials=true;
 const Messagbox = ({messageId,setLoading,loading}) => {
     const [inputMessage,setInputMessage]=useState("")
     const [allmessage,setAllmessage]=useState()
+const [allqna,setAllquestionans]=useState()
+console.log(allqna)
+    const allfetchqna=async()=>{
+      const response = await axios.get(`${baseurl}/api/message/sendQna/${messageId}`)
+      if(response.data.success){
+        
+        
+        
+       
+      
+        setAllquestionans(response.data.allqna)
+      
+        
+        
+      
+      }
+      }
 
     const fetchallMessage=async(id)=>{
         const response= await  axios.get(`${baseurl}/api/message/allmessageadmin/${id}`)
@@ -29,6 +47,8 @@ const Messagbox = ({messageId,setLoading,loading}) => {
       }}
 
 useEffect(()=>{
+  allfetchqna()
+
 if(messageId) fetchallMessage(messageId)
     socket.emit("joinroom", messageId);
 socket.on("message", (msg) => {
@@ -52,6 +72,17 @@ return () => {
 
       }
       <div className='h-[44rem] overflow-y-auto'>
+
+{allqna?.map((item,index)=>{
+  return(
+    <div>
+    <div className='flex justify-end  '>   <p className='max-w-[80%] rounded-lg my-2 p-3 bg-pink-500 text-white  '>{item.question}</p></div> 
+    <p className='max-w-[80%] w-fit rounded-lg my-2 p-3 bg-gray-100 text-gray-800'>{item.answer}</p>
+      </div>
+  )
+}) }
+
+
       { allmessage &&  <>
      {   !loading   && allmessage.map((message,index)=>{
       return(

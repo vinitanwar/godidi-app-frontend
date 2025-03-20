@@ -6,13 +6,17 @@ import { BsThreeDots } from "react-icons/bs";
 import axios from "axios";
 import { baseurl } from "../component/urls";
 import { io } from "socket.io-client";
+import { useRouter } from "next/navigation";
 axios.defaults.withCredentials=true
 
-const socket = io('http://145.223.22.236:8001')
+const socket = io('http://localhost:8000')
 
 
 
 const ChatBot = ({id}) => {
+const router=useRouter()
+
+
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState(null); // State for image file
@@ -21,99 +25,91 @@ const ChatBot = ({id}) => {
   const chatContainerRef = useRef(null);
   const fileInputRef = useRef(null); // Ref for file input
 const [allmessage,setAllmessage]=useState()
-  // const API_BASE_URL = "http://145.223.22.236:8001/api";
+ const [user,setUser]=useState()
 
-  // Scroll to bottom of chat
+
+const [activeChatbot,setActivechatbot]=useState(false)
+
+ const [questionans,setQuestionans]=useState()
+const [questionCount,setQuestionCount]=useState(0)
+const [allquestinans,setAllquestionans]=useState()
+
+
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   };
 
-  // Fetch initial questions and flatten suggestions
-  // useEffect(() => {
-  //   const fetchInitialData = async () => {
-  //     try {
-  //       const questionsResponse = await axios.get(`${API_BASE_URL}/questions`);
-  //       const initialMessages = questionsResponse.data.map((q) => ({
-  //         id: q._id,
-  //         text: q.text,
-  //         isBot: true,
-  //       }));
-  //       setMessages(initialMessages);
 
-  //       const allSuggestions = questionsResponse.data.flatMap((q) => q.suggestions);
-  //       setSuggestions(allSuggestions);
-  //     } catch (error) {
-  //       console.error("Error fetching initial data:", error);
-  //       setMessages([{ id: Date.now(), text: "Error loading chat data.", isBot: true }]);
-  //     }
-  //   };
-
-  //   fetchInitialData();
-  //   scrollToBottom();
-  // }, []);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // Handle sending message with optional image
+ 
+
+const allfetchqna=async()=>{
+const response = await axios.get(`${baseurl}/api/message/sendQna/${id}`)
+if(response.data.success){
+  
+  
+  setQuestionCount(response.data.allqna.length)
+ 
+
+  setAllquestionans(response.data.allqna)
+
+  
+  
+
+}
+}
+
+
+
+
   const handleSendMessage = async (text) => {
     if (!text.trim()) return;
-    
+
+
+  if(activeChatbot)  {
 const response= await  axios.post(`${baseurl}/api/message/sendmessage`,{message:inputMessage,messageid:id})
 if(response.data.success){
   socket.emit("sendMessage",{ room:id , senderType:"user",message:inputMessage})
+  console.log("sockent")
   setInputMessage("")
+}}
+
+
+
+
+
+
+
+else{
+const response = await axios.post(`${baseurl}/api/message/sendQna`,{question:questionans[questionCount]?.question,answer:inputMessage,messagid:id})
+
+if(response.data.success){
+
+setQuestionCount(questionCount+1)
+allfetchqna()
+setInputMessage("")
+if(questionCount+1 ==questionans.length){
+  setActivechatbot(true)
+  
+  // router.reload();
 }
 
-    // try {
-    //   // Prepare FormData for text and image
-    //   const formData = new FormData();
-    //   formData.append("text", text);
-    //   if (selectedImage) {
-    //     formData.append("image", selectedImage);
-    //   }
 
-    //   // Post to backend
-    //   const userMessageResponse = await axios.post(`${API_BASE_URL}/user-messages`, formData, {
-    //     headers: { "Content-Type": "multipart/form-data" },
-    //   });
-    //   const newUserMessage = {
-    //     id: userMessageResponse.data._id,
-    //     text: userMessageResponse.data.text,
-    //     image: userMessageResponse.data.image ? `${API_BASE_URL}/${userMessageResponse.data.image}` : null, // Full URL for image
-    //     isBot: false,
-    //   };
-    //   setMessages((prev) => [...prev, newUserMessage]);
-    //   setInputMessage("");
-    //   setSelectedImage(null); // Clear image after sending
-    //   if (fileInputRef.current) fileInputRef.current.value = ""; // Reset file input
+}
 
-    //   // Simulate bot response
-    //   setIsTyping(true);
-    //   const questionsResponse = await axios.get(`${API_BASE_URL}/questions`);
-    //   const randomQuestion = questionsResponse.data[Math.floor(Math.random() * questionsResponse.data.length)];
-    //   const botResponse = {
-    //     id: `${randomQuestion._id}-${Date.now()}`,
-    //     text: randomQuestion.response,
-    //     isBot: true,
-    //   };
 
-    //   setTimeout(() => {
-    //     setMessages((prev) => [...prev, botResponse]);
-    //     setIsTyping(false);
-    //   }, 1000);
-    // } catch (error) {
-    //   console.error("Error sending message:", error);
-    //   setMessages((prev) => [
-    //     ...prev,
-    //     { id: Date.now(), text: "Sorry, I couldn’t process that.", isBot: true },
-    //   ]);
-    //   setIsTyping(false);
-    // }
-  };
+}
+
+
+
+
+};
 
 
 
@@ -130,43 +126,123 @@ if(response.data.success){
     }
   };
 
+const fetchqna=async(service)=>{
 
+  const response = await axios.get(`${baseurl}/api/admin/qna/${service}`)
+if(response.data.success){
+  setQuestionans(response.data.qna)
+  const response2 = await axios.get(`${baseurl}/api/message/sendQna/${id}`)
+  if(response2.data.success){
+    
+    
+    setQuestionCount(response2.data.allqna.length)
+   
+  
+    setAllquestionans(response2.data.allqna)
+  
+    
+    if(response2.data.allqna.length === response.data.qna?.length){
+      setActivechatbot(true)
+    }
+  
+  }
+
+  
+ 
+  
+}
+}
 
 
 const fetchallMessage=async()=>{
   
   const response= await  axios.get(`${baseurl}/api/message/allmessage/${id}`)
   if(response.data.success){
+    
   setAllmessage(response.data.allMesasge)
+  setUser(response.data.user.userId)
+  fetchqna(response.data?.user?.userId?.service)
+
+  
+  
+
   }
 }
 
 
 useEffect(()=>{
   fetchallMessage()
-  socket.emit("joinroom", id);
-  socket.on("message", (msg) => {
-    console.log(msg)
+ 
+  
+
+
+  
+
+     socket.emit("joinroom", id);
+  // if(activeChatbot) {
+   socket.on("message", (msg) => {
+   
     if(msg.message){    setAllmessage((prevMessages) => [...prevMessages, msg]);
     }
   });
+  // }  
+
+
+
   return () => {
     socket.off("message");
   };
  
 },[ ])
 
-
-
+const handelLogout=async()=>{
+  const response = await axios.get(`${baseurl}/api/logout`)
+  if(response.data.success){
+    router.push("/")
+  }
+}
   return (
     <div className="min-h-screen bg-gray-100 p-4 flex items-center justify-center">
       <div className="w-full max-w-2xl bg-white rounded-xl shadow-xl overflow-hidden h-[80vh] flex flex-col">
-        <div className="bg-pink-500 p-4 text-white">
+        <div className="bg-pink-500 p-4 text-white flex justify-between">
           <h1 className="text-xl font-semibold">AI Assistant</h1>
+        <div className="flex gap-3">  <span className="text-xl font-semibold">{user?.service}  </span>  <span onClick={handelLogout} className="cursor-pointer">Logout</span> </div> 
+
         </div>
 
         <div ref={chatContainerRef} className="flex-1 h-full overflow-y-auto p-4 space-y-4">
-          {allmessage?.map((message,index) => (
+
+{allquestinans?.map((item,index)=>{
+  return (
+  <div key={index}  >
+              
+                <p className="text-sm w-fit max-w-[80%] rounded-lg p-3  bg-gray-100 text-gray-800">{item?.question}</p>
+       <div className=" flex justify-end"><p className="w-fit max-w-[80%] rounded-lg  p-3  bg-pink-500 text-white">{item?.answer}</p></div>   
+              
+            </div>
+  )
+}) }
+
+          {!activeChatbot &&  questionans && <div>
+            <p></p>
+
+            <div
+             
+              className={`flex  justify-start`}
+            >
+              <div
+                className={`max-w-[80%] rounded-lg p-3  text-gray-800 bg-pink-500 `}
+              >
+                <p className="text-sm">{questionans[questionCount]?.question}</p>
+               
+              </div>
+            </div>
+
+            </div>
+
+          }
+{activeChatbot &&<p className=" text-center">Now you can do live chat with team</p>}
+          {activeChatbot && allmessage?.map((message,index) => (
             <div
               key={index}
               className={`flex ${message.senderType !=="user" ? "justify-start" : "justify-end"}`}
@@ -193,16 +269,23 @@ useEffect(()=>{
 
        <div className="p-4 border-t">
           <div className="flex flex-wrap gap-2 mb-4">
-            {suggestions.map((suggestion, index) => (
+            {!activeChatbot && questionans &&  questionans[questionCount]?.options.map((suggestion, index) => (
               <button
                 key={index}
-                onClick={() => handleSendMessage(suggestion)}
+                onClick={() => setInputMessage(suggestion.value)}
                 className="bg-gray-100 hover:bg-gray-200 rounded-full px-4 py-1 text-sm text-gray-700 transition-colors"
               >
-                {suggestion}
+                {suggestion.value}
               </button>
             ))}
           </div>
+
+
+
+
+
+
+
 
           <div className="flex items-center gap-2">
             <textarea
@@ -212,6 +295,7 @@ useEffect(()=>{
               placeholder="Type your message..."
               className="flex-1 resize-none rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-pink-500 max-h-32"
               rows="1"
+              disabled={!activeChatbot}
             />
           
             <button
