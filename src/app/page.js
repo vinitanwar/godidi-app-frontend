@@ -143,7 +143,7 @@ console.log(response.data)
         onChange={(e) => setFormData({ ...formData, [e.target.name]: e.target.value })}
       />
       <input
-        type="text"
+        type="number"
         
         placeholder="Contact No.*"
         className="w-full p-3 border border-pink-300 rounded-lg focus:ring-2 focus:ring-pink-400 outline-none"
