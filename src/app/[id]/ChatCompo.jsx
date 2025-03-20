@@ -8,7 +8,7 @@ import { baseurl } from "../component/urls";
 import { io } from "socket.io-client";
 axios.defaults.withCredentials=true
 
-const socket = io('http://localhost:8000')
+const socket = io('https://godidi-app-back.onrender.com')
 
 
 
@@ -21,7 +21,7 @@ const ChatBot = ({id}) => {
   const chatContainerRef = useRef(null);
   const fileInputRef = useRef(null); // Ref for file input
 const [allmessage,setAllmessage]=useState()
-  // const API_BASE_URL = "http://godidi-app-back.onrender.com/api";
+  // const API_BASE_URL = "https://godidi-app-back.onrender.com/api";
 
   // Scroll to bottom of chat
   const scrollToBottom = () => {
