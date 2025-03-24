@@ -13,12 +13,14 @@ import { useRouter } from 'next/navigation';
  function Dashboard() {
 const navigation= useRouter()
   const [activePage, setActivePage] = useState('dashboard');
+  const [allcount,setAllcoundt]=useState("")
   const mockStats = {
     totalUsers: 1234,
     activeUsers: 892,
     revenue: '$45,678',
     growth: '+23%',
   };
+
 
   const handleLogout = () => {
     toast.info('Logged out successfully');
@@ -30,11 +32,17 @@ const fetchVerifyAdmin=async()=>{
     navigation.push("/adminlogin")
   }
 
+    const allinfo= await axios.get(`${baseurl}/api/admin/allcounts`)
+   
+    setAllcoundt(allinfo.data)
+  
+
 }
 useEffect(()=>{
   fetchVerifyAdmin()
 },[])
 
+console.log(allcount)
   return (
     
 
@@ -58,17 +66,54 @@ useEffect(()=>{
         {/* Main Content */}
         <main className="pt-16  p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            {Object.entries(mockStats).map(([key, value], index) => (
+           
               <div
-                key={index}
+           
                 className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
               >
                 <h3 className="text-gray-500 text-sm font-medium">
-                  {key.replace(/([A-Z])/g, ' $1').trim()}
+                total Users
                 </h3>
-                <p className="text-2xl font-bold text-gray-700 mt-2">{value}</p>
+                <p className="text-2xl font-bold text-gray-700 mt-2">{allcount.user}</p>
               </div>
-            ))}
+
+
+
+
+
+
+
+              <div
+           
+           className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
+         >
+           <h3 className="text-gray-500 text-sm font-medium">
+           total Services
+           </h3>
+           <p className="text-2xl font-bold text-gray-700 mt-2">{allcount.service}</p>
+         </div>
+
+
+
+
+
+         <div
+           
+           className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
+         >
+           <h3 className="text-gray-500 text-sm font-medium">
+           total Messages
+           </h3>
+           <p className="text-2xl font-bold text-gray-700 mt-2">{allcount.user}</p>
+         </div>
+
+
+
+
+
+
+
+          
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
